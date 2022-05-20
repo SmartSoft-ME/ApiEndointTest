@@ -1,7 +1,14 @@
 using ApiEndointTest.Data;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
+// for asp.net core 3.1 (globaly)
+builder.Services.AddMvc()
+ .AddJsonOptions(o => {
+     o.JsonSerializerOptions.
+        ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
 
+           });
 // Add services to the container.
 
 builder.Services.AddControllers();

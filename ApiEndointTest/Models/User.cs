@@ -1,4 +1,6 @@
-﻿namespace ApiEndointTest.Models
+﻿using System.Text.Json.Serialization;
+
+namespace ApiEndointTest.Models
 {
     public class User
     {
@@ -7,6 +9,7 @@
         public string LastName{ get; set; }
         public string Email { get; set; }
         public string Mobile { get; set; }
-        public Post? Post { get; set; }
+        [JsonIgnore]
+        public List<Post>? Post { get; set; }
     }
 }
