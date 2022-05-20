@@ -9,7 +9,6 @@ namespace ApiEndointTest.Models
         public string LastName{ get; set; }
         public string Email { get; set; }
         public string Mobile { get; set; }
-        [JsonIgnore]
         public List<Post>? Post { get; set; }
     }
 }

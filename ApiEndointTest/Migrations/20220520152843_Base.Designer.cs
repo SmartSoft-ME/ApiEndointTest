@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ApiEndointTest.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220519095657_UpdatedUser")]
-    partial class UpdatedUser
+    [Migration("20220520152843_Base")]
+    partial class Base
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -41,8 +41,7 @@ namespace ApiEndointTest.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AuthorId")
-                        .IsUnique();
+                    b.HasIndex("AuthorId");
 
                     b.ToTable("Posts");
                 });
@@ -111,8 +110,8 @@ namespace ApiEndointTest.Migrations
             modelBuilder.Entity("ApiEndointTest.Models.Post", b =>
                 {
                     b.HasOne("ApiEndointTest.Models.User", "Author")
-                        .WithOne("Post")
-                        .HasForeignKey("ApiEndointTest.Models.Post", "AuthorId")
+                        .WithMany("Post")
+                        .HasForeignKey("AuthorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

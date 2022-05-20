@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ApiEndointTest.Data;
 using ApiEndointTest.Models;
@@ -54,22 +49,22 @@ namespace ApiEndointTest.Controllers
         // PUT: api/Posts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPost(int id, PostDTO post)
+        public async Task<IActionResult> PutPost(int id, PostPostRequest post)
         {
-            if (id != post.Post.Id)
+            if (id != post.Id)
             {
                 return BadRequest();
             }
-            var toUpdatePost = await _context.Posts.FindAsync(id);
-            var user = _context.Users.SingleOrDefault(u => u.Id == post.UserId);
+            Post toUpdatePost = await _context.Posts.Include(p => p.Tags).FirstOrDefaultAsync(p => p.Id == id);
+            toUpdatePost.Title = post.Title;
+            toUpdatePost.Description = post.Description;
+            toUpdatePost.PostedDate = post.PostedDate;
+            toUpdatePost.AuthorId = post.UserId;
             List<Tag> tags = new();
             foreach (int tagId in post.TagIds)
             {
                 tags.Add(_context.Tags.SingleOrDefault(t => t.Id == tagId));
             }
-            toUpdatePost = post.Post;
-            toUpdatePost.Author = user;
-            toUpdatePost.AuthorId = user.Id;
             toUpdatePost.Tags = tags;
             _context.Entry(toUpdatePost).State = EntityState.Modified;
             try
@@ -94,7 +89,7 @@ namespace ApiEndointTest.Controllers
         // POST: api/Posts
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Post>> PostPost(PostDTO post)
+        public async Task<ActionResult<Post>> PostPost(PostPostRequest post)
         {
             if (_context.Posts is null || _context.Tags is null || _context.Users is null)
             {
@@ -106,13 +101,20 @@ namespace ApiEndointTest.Controllers
             {
                 tags.Add(_context.Tags.SingleOrDefault(t => t.Id == tagId));
             }
-            post.Post.Tags = tags;
-            post.Post.AuthorId = user.Id;
-            post.Post.Author = user;
-            _context.Posts.Add(post.Post);
+            Post newPost = new()
+            {
+                Title = post.Title,
+                Description = post.Description,
+                PostedDate = post.PostedDate,
+                AuthorId = post.UserId
+
+            };
+            newPost.Tags = tags;
+            newPost.Author = user;
+            _context.Posts.Add(newPost);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetPost", new { id = post.Post.Id }, post.Post);
+            return CreatedAtAction("GetPost", new { id = newPost.Id }, newPost);
         }
 
         // DELETE: api/Posts/5

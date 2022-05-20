@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ApiEndointTest.Data;
 using ApiEndointTest.Models;
+using ApiEndointTest.DTOs;
+using ApiEndointTest.Requests;
 
 namespace ApiEndointTest.Controllers
 {
@@ -25,21 +22,21 @@ namespace ApiEndointTest.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-          if (_context.Users == null)
-          {
-              return NotFound();
-          }
-            return await _context.Users.ToListAsync();
+            if (_context.Users == null)
+            {
+                return NotFound();
+            }
+            return await _context.Users.Include(u => u.Post).ThenInclude(p => p.Tags).ToListAsync();
         }
 
         // GET: api/Users/5
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUser(int id)
         {
-          if (_context.Users == null)
-          {
-              return NotFound();
-          }
+            if (_context.Users == null)
+            {
+                return NotFound();
+            }
             var user = await _context.Users.FindAsync(id);
 
             if (user == null)
@@ -51,16 +48,19 @@ namespace ApiEndointTest.Controllers
         }
 
         // PUT: api/Users/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(int id, User user)
+        public async Task<IActionResult> PutUser(int id, UserPostRequest user)
         {
             if (id != user.Id)
             {
                 return BadRequest();
             }
-
-            _context.Entry(user).State = EntityState.Modified;
+            User toUpdateUser = await _context.Users.FindAsync(id);
+            toUpdateUser.FirstName = user.FirstName;
+            toUpdateUser.LastName = user.LastName;
+            toUpdateUser.Email = user.Email;
+            toUpdateUser.Mobile = user.Mobile;
+            _context.Entry(toUpdateUser).State = EntityState.Modified;
 
             try
             {
@@ -82,18 +82,26 @@ namespace ApiEndointTest.Controllers
         }
 
         // POST: api/Users
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
+        public async Task<ActionResult<User>> PostUser(UserPostRequest user)
         {
-          if (_context.Users == null)
-          {
-              return Problem("Entity set 'AppDbContext.Users'  is null.");
-          }
-            _context.Users.Add(user);
+            if (_context.Users == null)
+            {
+                return Problem("Entity set 'AppDbContext.Users'  is null.");
+            }
+            User newUser = new()
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Mobile = user.Mobile,
+                Post = new()
+            };
+            _context.Users.Add(newUser);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUser", new { id = user.Id }, user);
+            return CreatedAtAction("GetUser", new { id = newUser.Id }, newUser);
         }
 
         // DELETE: api/Users/5

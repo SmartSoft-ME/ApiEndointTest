@@ -23,7 +23,7 @@ namespace ApiEndointTest.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("AuthorId")
+                    b.Property<int>("AuthorId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Description")
@@ -109,7 +109,9 @@ namespace ApiEndointTest.Migrations
                 {
                     b.HasOne("ApiEndointTest.Models.User", "Author")
                         .WithMany("Post")
-                        .HasForeignKey("AuthorId");
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Author");
                 });

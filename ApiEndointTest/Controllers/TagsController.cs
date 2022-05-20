@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ApiEndointTest.Data;
 using ApiEndointTest.Models;
+using ApiEndointTest.Requests;
 
 namespace ApiEndointTest.Controllers
 {
@@ -29,7 +30,7 @@ namespace ApiEndointTest.Controllers
           {
               return NotFound();
           }
-            return await _context.Tags.ToListAsync();
+            return await _context.Tags.Include(t=>t.Posts).ToListAsync();
         }
 
         // GET: api/Tags/5
@@ -53,14 +54,16 @@ namespace ApiEndointTest.Controllers
         // PUT: api/Tags/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutTag(int id, Tag tag)
+        public async Task<IActionResult> PutTag(int id, TagPostRequest tag)
         {
             if (id != tag.Id)
             {
                 return BadRequest();
             }
-
-            _context.Entry(tag).State = EntityState.Modified;
+            Tag toUpdateTag = await _context.Tags.FindAsync(id);
+            toUpdateTag.Name = tag.Name;
+            toUpdateTag.Description = tag.Description;
+            _context.Entry(toUpdateTag).State = EntityState.Modified;
 
             try
             {
@@ -84,16 +87,23 @@ namespace ApiEndointTest.Controllers
         // POST: api/Tags
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Tag>> PostTag(Tag tag)
+        public async Task<ActionResult<Tag>> PostTag(TagPostRequest tag)
         {
           if (_context.Tags == null)
           {
               return Problem("Entity set 'AppDbContext.Tags'  is null.");
           }
-            _context.Tags.Add(tag);
+            Tag newTag = new()
+            {
+                Id = tag.Id,
+                Name = tag.Name,
+                Description = tag.Description,
+                Posts = new()
+            };
+            _context.Tags.Add(newTag);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetTag", new { id = tag.Id }, tag);
+            return CreatedAtAction("GetTag", new { id = newTag.Id }, newTag);
         }
 
         // DELETE: api/Tags/5

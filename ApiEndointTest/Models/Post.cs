@@ -8,9 +8,8 @@ namespace ApiEndointTest.Models
         public string Title { get; set; }
         public string Description { get; set; }
         public DateTime PostedDate { get; set; }
-        public int? AuthorId { get; set; }
-        public User? Author { get; set; }
-
+        public int AuthorId { get; set; }
+        public User Author { get; set; }
         public List<Tag>? Tags { get; set; }
     }
 }
