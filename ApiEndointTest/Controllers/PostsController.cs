@@ -103,6 +103,7 @@ namespace ApiEndointTest.Controllers
             }
             Post newPost = new()
             {
+                Id = post.Id,
                 Title = post.Title,
                 Description = post.Description,
                 PostedDate = post.PostedDate,
