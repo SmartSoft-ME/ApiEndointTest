@@ -11,6 +11,8 @@ builder.Services.AddMvc()
            });
 // Add services to the container.
 
+builder.Services.AddCors();
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -25,6 +27,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors(o => o.AllowAnyOrigin());
 
 app.UseHttpsRedirection();
 
